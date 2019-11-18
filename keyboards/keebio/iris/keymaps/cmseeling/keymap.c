@@ -9,8 +9,13 @@ extern keymap_config_t keymap_config;
 
 enum custom_keycodes {
   QWERTY = SAFE_RANGE,
-  SYMBOL,
-  ENC_PRS
+  SYMBOL
+};
+
+enum {
+  TD_ENC = 0,
+  TD_CTRL,
+  TD_ALT
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -23,9 +28,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
       KC_LSFT,    KC_A,      KC_S,      KC_D,      KC_F,      KC_G,                                  KC_H,      KC_J,      KC_K,      KC_L,     KC_SCLN,  KC_QUOT,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-      KC_LGUI,    KC_Z,      KC_X,      KC_C,      KC_V,      KC_B,    ENC_PRS,          KC_GRV,     KC_N,      KC_M,    KC_COMM,    KC_DOT,    KC_SLSH,  SYMBOL,
+      KC_LGUI,    KC_Z,      KC_X,      KC_C,      KC_V,      KC_B,   TD(TD_ENC),        KC_GRV,     KC_N,      KC_M,    KC_COMM,    KC_DOT,    KC_SLSH,  SYMBOL,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-                                            KC_LCTL,   KC_SPC,    KC_LALT,                    KC_BSPC,   KC_ENT,    KC_RSFT
+                                          TD(TD_CTRL), KC_SPC,  TD(TD_ALT),                   KC_BSPC,   KC_ENT,    KC_RSFT
   //                                      \----------+----------+----------/                \----------+----------+----------/
   ),
 
@@ -111,6 +116,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   }
   return true;
 }
+
+qk_tap_dance_action_t tap_dance_actions[] = {
+    [TD_CTRL]   = ACTION_TAP_DANCE_DOUBLE(KC_LCTRL, KC_LBRC),
+    [TD_ALT]    = ACTION_TAP_DANCE_DOUBLE(KC_LALT, KC_RBRC)
+};
 
 void encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
