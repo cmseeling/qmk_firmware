@@ -30,7 +30,8 @@ typedef struct {
 enum {
   SINGLE_TAP = 1,
   SINGLE_HOLD = 2,
-  DOUBLE_TAP = 3
+  DOUBLE_TAP = 3,
+  TRIPLE_TAP = 4
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -148,6 +149,8 @@ int cur_dance (qk_tap_dance_state_t *state) {
     }
   } else if (state->count == 2) {
     return DOUBLE_TAP;
+  } else if (state->count == 3) {
+    return TRIPLE_TAP;
   }
   else return 8;
 }
@@ -159,65 +162,68 @@ static tap ql_tap_state = {
 };
 
 void encoder_tap (qk_tap_dance_state_t *state, void *user_data) {
-    if (state->count == 1) {
-        if (layer_state_is(_ENCUD)) {
-            //if already set, then switch it off
-            layer_off(_ENCUD);
-        } else {
-            //if not already set, then switch the layer on
-            layer_on(_ENCUD);
-        }
-    } else if (state->count == 2) {
-        if (layer_state_is(_ENCLR)) {
-            //if already set, then switch it off
-            layer_off(_ENCLR);
-        } else {
-            //if not already set, then switch the layer on
-            layer_on(_ENCLR);
-        }
+  if (state->count == 1) {
+    if (layer_state_is(_ENCUD)) {
+      //if already set, then switch it off
+      layer_off(_ENCUD);
+    } else {
+      //if not already set, then switch the layer on
+      layer_on(_ENCUD);
     }
+  } else if (state->count == 2) {
+    if (layer_state_is(_ENCLR)) {
+      //if already set, then switch it off
+      layer_off(_ENCLR);
+    } else {
+      //if not already set, then switch the layer on
+      layer_on(_ENCLR);
+    }
+  }
 }
 
 void grv_tap (qk_tap_dance_state_t *state, void *user_data) {
-    if (state->count == 1) {
-        //send ` to the computer unless we're on the RGB layer. Turn off RGB layer if it's active
-        if (layer_state_is(_RGB)) {
-            layer_off(_RGB);
-        } else {
-            tap_code(KC_GRV);
-        }
-    } else if (state->count == 2) {
-        if (layer_state_is(_NAVIGATION)) {
-            //if already set, then switch it off
-            layer_off(_NAVIGATION);
-        } else {
-            //if not already set, then switch the layer on
-            layer_on(_NAVIGATION);
-        }
-    } else if (state->count == 4) {
-        //I've confused myself and need to reset the layers
-        layer_off(_SYMBOL);
-        layer_off(_NAVIGATION);
-        layer_off(_ENCLR);
-        layer_off(_ENCUD);
-    } else if (state->count == 7) {
-        //Activate RGB layer
-        layer_on(_RGB);
+  if (state->count == 1) {
+    //send ` to the computer unless we're on the RGB layer. Turn off RGB layer if it's active
+    if (layer_state_is(_RGB)) {
+      layer_off(_RGB);
+    } else {
+      tap_code(KC_GRV);
     }
+  } else if (state->count == 2) {
+    if (layer_state_is(_NAVIGATION)) {
+      //if already set, then switch it off
+      layer_off(_NAVIGATION);
+    } else {
+      //if not already set, then switch the layer on
+      layer_on(_NAVIGATION);
+    }
+  } else if (state->count == 4) {
+    //I've confused myself and need to reset the layers
+    layer_off(_SYMBOL);
+    layer_off(_NAVIGATION);
+    layer_off(_ENCLR);
+    layer_off(_ENCUD);
+  } else if (state->count == 7) {
+    //Activate RGB layer
+    layer_on(_RGB);
+  }
 }
 
 void ctrl_dance_finish (qk_tap_dance_state_t *state, void *user_data) {
   ql_tap_state.state = cur_dance(state);
   switch (ql_tap_state.state) {
     case SINGLE_TAP:
-      register_code(KC_LSFT);
-      tap_code(KC_LBRC);
-      unregister_code(KC_LSFT);
+      tap_code(KC_LCTRL);
       break;
     case SINGLE_HOLD:
       register_code(KC_LCTRL);
       break;
     case DOUBLE_TAP:
+      register_code(KC_LSFT);
+      tap_code(KC_LBRC);
+      unregister_code(KC_LSFT);
+      break;
+    case TRIPLE_TAP:
       tap_code(KC_LBRC);
       break;
   }
@@ -232,14 +238,17 @@ void alt_dance_finish (qk_tap_dance_state_t *state, void *user_data) {
   ql_tap_state.state = cur_dance(state);
   switch (ql_tap_state.state) {
     case SINGLE_TAP:
-      register_code(KC_LSFT);
-      tap_code(KC_RBRC);
-      unregister_code(KC_LSFT);
+      tap_code(KC_LALT);
       break;
     case SINGLE_HOLD:
       register_code(KC_LALT);
       break;
     case DOUBLE_TAP:
+      register_code(KC_LSFT);
+      tap_code(KC_RBRC);
+      unregister_code(KC_LSFT);
+      break;
+    case TRIPLE_TAP:
       tap_code(KC_RBRC);
       break;
   }
@@ -250,34 +259,36 @@ void alt_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
   ql_tap_state.state = 0;
 }
 
+//triple escape for ctrl + alt + delete?
+//test if shift + double tap will send shifted code
 qk_tap_dance_action_t tap_dance_actions[] = {
-    [TD_ENC]    = ACTION_TAP_DANCE_FN(encoder_tap),
-    [TD_GRV]    = ACTION_TAP_DANCE_FN(grv_tap),
-    [TD_CTRL]   = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ctrl_dance_finish, ctrl_dance_reset),
-    [TD_ALT]    = ACTION_TAP_DANCE_FN_ADVANCED(NULL, alt_dance_finish, alt_dance_reset),
-    [TD_SLCK]   = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS)
+  [TD_ENC]    = ACTION_TAP_DANCE_FN(encoder_tap),
+  [TD_GRV]    = ACTION_TAP_DANCE_FN(grv_tap),
+  [TD_CTRL]   = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ctrl_dance_finish, ctrl_dance_reset),
+  [TD_ALT]    = ACTION_TAP_DANCE_FN_ADVANCED(NULL, alt_dance_finish, alt_dance_reset),
+  [TD_SLCK]   = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS)
 };
 
 void encoder_update_user(uint8_t index, bool clockwise) {
-    if (index == _BASE) {
-        if (clockwise) {
-            tap_code(KC_WH_D);
-        } else {
-            tap_code(KC_WH_U);
-        }
+  if (index == _BASE) {
+    if (clockwise) {
+      tap_code(KC_WH_D);
+    } else {
+      tap_code(KC_WH_U);
     }
-    else if (index == _ENCUD) {
-        if (clockwise) {
-            tap_code(KC_DOWN);
-        } else {
-            tap_code(KC_UP);
-        }
+  }
+  else if (index == _ENCUD) {
+    if (clockwise) {
+      tap_code(KC_DOWN);
+    } else {
+      tap_code(KC_UP);
     }
-    else if (index == _ENCLR) {
-        if (clockwise) {
-            tap_code(KC_RGHT);
-        } else {
-            tap_code(KC_LEFT);
-        }
+  }
+  else if (index == _ENCLR) {
+    if (clockwise) {
+      tap_code(KC_RGHT);
+    } else {
+      tap_code(KC_LEFT);
     }
+  }
 }
