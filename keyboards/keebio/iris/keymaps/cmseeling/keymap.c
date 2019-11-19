@@ -22,6 +22,17 @@ enum {
   TD_SLCK
 };
 
+typedef struct {
+  bool is_press_action;
+  int state;
+} tap;
+
+enum {
+  SINGLE_TAP = 1,
+  SINGLE_HOLD = 2,
+  DOUBLE_TAP = 3
+};
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_BASE] = LAYOUT(
@@ -127,6 +138,26 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //   return true;
 // };
 
+//Determine the current tap dance state
+int cur_dance (qk_tap_dance_state_t *state) {
+  if (state->count == 1) {
+    if (!state->pressed) {
+      return SINGLE_TAP;
+    } else {
+      return SINGLE_HOLD;
+    }
+  } else if (state->count == 2) {
+    return DOUBLE_TAP;
+  }
+  else return 8;
+}
+
+//Initialize tap structure associated with example tap dance key
+static tap ql_tap_state = {
+  .is_press_action = true,
+  .state = 0
+};
+
 void encoder_tap (qk_tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
         if (layer_state_is(_ENCUD)) {
@@ -153,7 +184,7 @@ void grv_tap (qk_tap_dance_state_t *state, void *user_data) {
         if (layer_state_is(_RGB)) {
             layer_off(_RGB);
         } else {
-            register_code(KC_GRV);
+            tap_code(KC_GRV);
         }
     } else if (state->count == 2) {
         if (layer_state_is(_NAVIGATION)) {
@@ -175,11 +206,55 @@ void grv_tap (qk_tap_dance_state_t *state, void *user_data) {
     }
 }
 
+void ctrl_dance_finish (qk_tap_dance_state_t *state, void *user_data) {
+  ql_tap_state.state = cur_dance(state);
+  switch (ql_tap_state.state) {
+    case SINGLE_TAP:
+      register_code(KC_LSFT);
+      tap_code(KC_LBRC);
+      unregister_code(KC_LSFT);
+      break;
+    case SINGLE_HOLD:
+      register_code(KC_LCTRL);
+      break;
+    case DOUBLE_TAP:
+      tap_code(KC_LBRC);
+      break;
+  }
+}
+
+void ctrl_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
+  unregister_code (KC_LCTRL);
+  ql_tap_state.state = 0;
+}
+
+void alt_dance_finish (qk_tap_dance_state_t *state, void *user_data) {
+  ql_tap_state.state = cur_dance(state);
+  switch (ql_tap_state.state) {
+    case SINGLE_TAP:
+      register_code(KC_LSFT);
+      tap_code(KC_RBRC);
+      unregister_code(KC_LSFT);
+      break;
+    case SINGLE_HOLD:
+      register_code(KC_LALT);
+      break;
+    case DOUBLE_TAP:
+      tap_code(KC_RBRC);
+      break;
+  }
+}
+
+void alt_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
+  unregister_code (KC_LALT);
+  ql_tap_state.state = 0;
+}
+
 qk_tap_dance_action_t tap_dance_actions[] = {
     [TD_ENC]    = ACTION_TAP_DANCE_FN(encoder_tap),
     [TD_GRV]    = ACTION_TAP_DANCE_FN(grv_tap),
-    [TD_CTRL]   = ACTION_TAP_DANCE_DOUBLE(KC_LCTRL, KC_LBRC),
-    [TD_ALT]    = ACTION_TAP_DANCE_DOUBLE(KC_LALT, KC_RBRC),
+    [TD_CTRL]   = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ctrl_dance_finish, ctrl_dance_reset),
+    [TD_ALT]    = ACTION_TAP_DANCE_FN_ADVANCED(NULL, alt_dance_finish, alt_dance_reset),
     [TD_SLCK]   = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS)
 };
 
