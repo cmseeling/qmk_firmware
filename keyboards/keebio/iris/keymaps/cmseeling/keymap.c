@@ -176,8 +176,8 @@ void grv_tap (qk_tap_dance_state_t *state, void *user_data) {
 }
 
 qk_tap_dance_action_t tap_dance_actions[] = {
-    [TD_ENC]    = ACTION_TAP_DANCE_FN_ADVANCED(encoder_tap, NULL, NULL),
-    [TD_GRV]    = ACTION_TAP_DANCE_FN_ADVANCED(grv_tap, NULL, NULL),
+    [TD_ENC]    = ACTION_TAP_DANCE_FN(encoder_tap),
+    [TD_GRV]    = ACTION_TAP_DANCE_FN(grv_tap),
     [TD_CTRL]   = ACTION_TAP_DANCE_DOUBLE(KC_LCTRL, KC_LBRC),
     [TD_ALT]    = ACTION_TAP_DANCE_DOUBLE(KC_LALT, KC_RBRC),
     [TD_SLCK]   = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS)
