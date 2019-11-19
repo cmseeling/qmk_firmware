@@ -191,11 +191,18 @@ void encoder_update_user(uint8_t index, bool clockwise) {
             tap_code(KC_WH_U);
         }
     }
-    else if (index == 1) {
+    else if (index == _ENCUD) {
         if (clockwise) {
-            tap_code(KC_PGDN);
+            tap_code(KC_DOWN);
         } else {
-            tap_code(KC_PGUP);
+            tap_code(KC_UP);
+        }
+    }
+    else if (index == _ENCLR) {
+        if (clockwise) {
+            tap_code(KC_RGHT);
+        } else {
+            tap_code(KC_LEFT);
         }
     }
 }
