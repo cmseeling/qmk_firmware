@@ -5,9 +5,8 @@ extern keymap_config_t keymap_config;
 #define _BASE 0
 #define _SYMBOL 1
 #define _NAVIGATION 2
-#define _ENCLR 3
-#define _ENCUD 4
-#define _RGB 5
+#define _ENCODER 3
+#define _RGB 4
 
 enum custom_keycodes {
   QWERTY = SAFE_RANGE,
@@ -15,8 +14,7 @@ enum custom_keycodes {
 };
 
 enum {
-  TD_ENC = 0,
-  TD_GRV,
+  TD_GRV = 0,
   TD_CTRL,
   TD_ALT,
   TD_SLCK
@@ -44,7 +42,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
       KC_LSFT,    KC_A,      KC_S,      KC_D,      KC_F,      KC_G,                                  KC_H,      KC_J,      KC_K,      KC_L,     KC_SCLN,  KC_QUOT,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-      KC_LGUI,    KC_Z,      KC_X,      KC_C,      KC_V,      KC_B,   TD(TD_ENC),      TD(TD_GRV),   KC_N,      KC_M,    KC_COMM,    KC_DOT,    KC_SLSH, TG(_SYMBOL),
+      KC_LGUI,    KC_Z,      KC_X,      KC_C,      KC_V,      KC_B,  TG(_ENCODER),     TD(TD_GRV),   KC_N,      KC_M,    KC_COMM,    KC_DOT,    KC_SLSH, TG(_SYMBOL),
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
                                           TD(TD_CTRL), KC_SPC,  TD(TD_ALT),                   KC_BSPC,   KC_ENT,   TD(TD_SLCK)
   //                                      \----------+----------+----------/                \----------+----------+----------/
@@ -78,21 +76,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //                                      \----------+----------+----------/                \----------+----------+----------/
   ),
 
-  [_ENCLR] = LAYOUT(
-  //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,   _______,         _______,   _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-                                            _______,   _______,   _______,                    _______,   _______,   _______
-  //                                      \----------+----------+----------/                \----------+----------+----------/
-  ),
-
-  [_ENCUD] = LAYOUT(
+  [_ENCODER] = LAYOUT(
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
      _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
@@ -121,24 +105,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 };
 
-// bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-//   switch (keycode) {
-//       case SYMBOL:
-//         if (record->event.pressed) {
-//             if (layer_state_is(_SYMBOL)) {
-//                 //if already set, then switch it off
-//                 layer_off(_SYMBOL);
-//             } else {
-//                 //if not already set, then switch the layer on
-//                 layer_on(_SYMBOL);
-//             }
-//         }
-//         return false;
-//         break;
-//   }
-//   return true;
-// };
-
 //Determine the current tap dance state
 int cur_dance (qk_tap_dance_state_t *state) {
   if (state->count == 1) {
@@ -161,26 +127,6 @@ static tap ql_tap_state = {
   .state = 0
 };
 
-void encoder_tap (qk_tap_dance_state_t *state, void *user_data) {
-  if (state->count == 1) {
-    if (layer_state_is(_ENCUD)) {
-      //if already set, then switch it off
-      layer_off(_ENCUD);
-    } else {
-      //if not already set, then switch the layer on
-      layer_on(_ENCUD);
-    }
-  } else if (state->count == 2) {
-    if (layer_state_is(_ENCLR)) {
-      //if already set, then switch it off
-      layer_off(_ENCLR);
-    } else {
-      //if not already set, then switch the layer on
-      layer_on(_ENCLR);
-    }
-  }
-}
-
 void grv_tap (qk_tap_dance_state_t *state, void *user_data) {
   if (state->count == 1) {
     //send ` to the computer unless we're on the RGB layer. Turn off RGB layer if it's active
@@ -199,10 +145,14 @@ void grv_tap (qk_tap_dance_state_t *state, void *user_data) {
     }
   } else if (state->count == 4) {
     //I've confused myself and need to reset the layers
-    layer_off(_SYMBOL);
-    layer_off(_NAVIGATION);
-    layer_off(_ENCLR);
-    layer_off(_ENCUD);
+    if (layer_state_is(_SYMBOL))
+        layer_off(_SYMBOL);
+
+    if (layer_state_is(_NAVIGATION))
+        layer_off(_NAVIGATION);
+
+    if (layer_state_is(_ENCODER))
+        layer_off(_ENCODER);
   } else if (state->count == 7) {
     //Activate RGB layer
     layer_on(_RGB);
@@ -262,7 +212,6 @@ void alt_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
 //triple escape for ctrl + alt + delete?
 //test if shift + double tap will send shifted code
 qk_tap_dance_action_t tap_dance_actions[] = {
-  [TD_ENC]    = ACTION_TAP_DANCE_FN(encoder_tap),
   [TD_GRV]    = ACTION_TAP_DANCE_FN(grv_tap),
   [TD_CTRL]   = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ctrl_dance_finish, ctrl_dance_reset),
   [TD_ALT]    = ACTION_TAP_DANCE_FN_ADVANCED(NULL, alt_dance_finish, alt_dance_reset),
@@ -270,25 +219,28 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 };
 
 void encoder_update_user(uint8_t index, bool clockwise) {
-  if (index == _BASE) {
+  if (index == _ENCODER) {
+    uint8_t mods = get_mods();
+    clear_mods();
+    if (mods == MOD_BIT(KC_RSFT)) {
+      if (clockwise) {
+        tap_code(KC_RGHT);
+      } else {
+        tap_code(KC_LEFT);
+      }
+    } else {
+      if (clockwise) {
+        tap_code(KC_DOWN);
+      } else {
+        tap_code(KC_UP);
+      }
+    }
+    set_mods(mods);
+  } else {
     if (clockwise) {
       tap_code(KC_WH_D);
     } else {
       tap_code(KC_WH_U);
-    }
-  }
-  else if (index == _ENCUD) {
-    if (clockwise) {
-      tap_code(KC_DOWN);
-    } else {
-      tap_code(KC_UP);
-    }
-  }
-  else if (index == _ENCLR) {
-    if (clockwise) {
-      tap_code(KC_RGHT);
-    } else {
-      tap_code(KC_LEFT);
     }
   }
 }
