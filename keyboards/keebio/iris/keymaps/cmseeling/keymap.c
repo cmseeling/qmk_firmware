@@ -17,7 +17,8 @@ enum {
   TD_GRV = 0,
   TD_CTRL,
   TD_ALT,
-  TD_SLCK
+  TD_SLCK,
+  TD_ESC
 };
 
 typedef struct {
@@ -29,14 +30,15 @@ enum {
   SINGLE_TAP = 1,
   SINGLE_HOLD = 2,
   DOUBLE_TAP = 3,
-  TRIPLE_TAP = 4
+  TRIPLE_TAP = 4,
+  NO_TAP_STATE
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_BASE] = LAYOUT(
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-      KC_ESC,     KC_1,      KC_2,      KC_3,      KC_4,      KC_5,                                  KC_6,      KC_7,      KC_8,      KC_9,      KC_0,    KC_DEL,
+    TD(TD_ESC),   KC_1,      KC_2,      KC_3,      KC_4,      KC_5,                                  KC_6,      KC_7,      KC_8,      KC_9,      KC_0,    KC_DEL,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
       KC_TAB,     KC_Q,      KC_W,      KC_E,      KC_R,      KC_T,                                  KC_Y,      KC_U,      KC_I,      KC_O,      KC_P,    KC_BSLS,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
@@ -64,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_NAVIGATION] = LAYOUT(
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,     KC_F5,     KC_F6,                               _______,     KC_7,      KC_8,      KC_9,    KC_SLSH,   KC_EQL,
+     _______,   _______,   _______,    KC_F4,      KC_F5,     KC_F6,                               _______,     KC_7,      KC_8,      KC_9,    KC_SLSH,   KC_EQL,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
      _______,   _______,    KC_UP,    _______,   KC_PGUP,   KC_HOME,                               _______,     KC_4,      KC_5,      KC_6,    KC_ASTR,   _______,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
@@ -118,7 +120,8 @@ int cur_dance (qk_tap_dance_state_t *state) {
   } else if (state->count == 3) {
     return TRIPLE_TAP;
   }
-  else return 8;
+
+  return NO_TAP_STATE;
 }
 
 //Initialize tap structure associated with example tap dance key
@@ -209,13 +212,27 @@ void alt_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
   ql_tap_state.state = 0;
 }
 
-//triple escape for ctrl + alt + delete?
+void esc_tap (qk_tap_dance_state_t *state, void *user_data) {
+  if (state->count == 3) {
+    tap_code(KC_ESC);
+  } else {
+    register_code (KC_LCTL);   register_code (KC_LALT);   register_code (KC_DEL);
+  }
+}
+
+void esc_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
+  if (state->count == 3) {
+    unregister_code (KC_LCTL); unregister_code (KC_LALT); unregister_code (KC_DEL);
+  }
+}
+
 //test if shift + double tap will send shifted code
 qk_tap_dance_action_t tap_dance_actions[] = {
-  [TD_GRV]    = ACTION_TAP_DANCE_FN(grv_tap),
-  [TD_CTRL]   = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ctrl_dance_finish, ctrl_dance_reset),
-  [TD_ALT]    = ACTION_TAP_DANCE_FN_ADVANCED(NULL, alt_dance_finish, alt_dance_reset),
-  [TD_SLCK]   = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS)
+  [TD_GRV]  = ACTION_TAP_DANCE_FN(grv_tap),
+  [TD_CTRL] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ctrl_dance_finish, ctrl_dance_reset),
+  [TD_ALT]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, alt_dance_finish, alt_dance_reset),
+  [TD_SLCK] = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS),
+  [TD_ESC]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, esc_tap, esc_dance_reset),
 };
 
 void encoder_update_user(uint8_t index, bool clockwise) {
