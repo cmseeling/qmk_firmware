@@ -31,6 +31,8 @@ enum {
   SINGLE_HOLD = 2,
   DOUBLE_TAP = 3,
   TRIPLE_TAP = 4,
+  QUAD_TAP = 5,
+  LUCKY_SEVEN = 6,
   NO_TAP_STATE
 };
 
@@ -119,6 +121,10 @@ int cur_dance (qk_tap_dance_state_t *state) {
     return DOUBLE_TAP;
   } else if (state->count == 3) {
     return TRIPLE_TAP;
+  } else if (state->count == 4) {
+    return QUAD_TAP;
+  } else if (state->count == 7) {
+    return LUCKY_SEVEN;
   }
 
   return NO_TAP_STATE;
@@ -130,36 +136,52 @@ static tap ql_tap_state = {
   .state = 0
 };
 
-void grv_tap (qk_tap_dance_state_t *state, void *user_data) {
-  if (state->count == 1) {
-    //send ` to the computer unless we're on the RGB layer. Turn off RGB layer if it's active
-    if (layer_state_is(_RGB)) {
-      layer_off(_RGB);
-    } else {
-      tap_code(KC_GRV);
-    }
-  } else if (state->count == 2) {
-    if (layer_state_is(_NAVIGATION)) {
-      //if already set, then switch it off
-      layer_off(_NAVIGATION);
-    } else {
-      //if not already set, then switch the layer on
-      layer_on(_NAVIGATION);
-    }
-  } else if (state->count == 4) {
-    //I've confused myself and need to reset the layers
-    if (layer_state_is(_SYMBOL))
-        layer_off(_SYMBOL);
-
-    if (layer_state_is(_NAVIGATION))
+void grv_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
+  ql_tap_state.state = cur_dance(state);
+  switch(ql_tap_state.state) {
+    case SINGLE_TAP:
+      if (layer_state_is(_RGB)) {
+        layer_off(_RGB);
+      } else {
+        tap_code(KC_GRV);
+      }
+      break;
+    case SINGLE_HOLD:
+      register_code(KC_RCTL);
+      break;
+    case DOUBLE_TAP:
+      if (layer_state_is(_NAVIGATION)) {
+        //if already set, then switch it off
         layer_off(_NAVIGATION);
+      } else {
+        //if not already set, then switch the layer on
+        layer_on(_NAVIGATION);
+      }
+      break;
+    case QUAD_TAP:
+      //I've confused myself and need to reset the layers
+      if (layer_state_is(_SYMBOL))
+          layer_off(_SYMBOL);
 
-    if (layer_state_is(_ENCODER))
-        layer_off(_ENCODER);
-  } else if (state->count == 7) {
-    //Activate RGB layer
-    layer_on(_RGB);
+      if (layer_state_is(_NAVIGATION))
+          layer_off(_NAVIGATION);
+
+      if (layer_state_is(_ENCODER))
+          layer_off(_ENCODER);
+
+      break;
+    case LUCKY_SEVEN:
+      //Activate RGB layer
+      layer_on(_RGB);
+      break;
   }
+}
+
+void grv_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
+  if(ql_tap_state.state == SINGLE_HOLD) {
+    unregister_code (KC_RCTL);
+  }
+  ql_tap_state.state = 0;
 }
 
 void ctrl_dance_finish (qk_tap_dance_state_t *state, void *user_data) {
@@ -183,7 +205,9 @@ void ctrl_dance_finish (qk_tap_dance_state_t *state, void *user_data) {
 }
 
 void ctrl_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
-  unregister_code (KC_LCTRL);
+  if(ql_tap_state.state == SINGLE_HOLD) {
+    unregister_code (KC_LCTRL);
+  }
   ql_tap_state.state = 0;
 }
 
@@ -208,27 +232,32 @@ void alt_dance_finish (qk_tap_dance_state_t *state, void *user_data) {
 }
 
 void alt_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
-  unregister_code (KC_LALT);
+  if(ql_tap_state.state == SINGLE_HOLD) {
+    unregister_code (KC_LALT);
+  }
   ql_tap_state.state = 0;
 }
 
 void esc_tap (qk_tap_dance_state_t *state, void *user_data) {
-  if (state->count == 3) {
-    tap_code(KC_ESC);
-  } else {
-    register_code (KC_LCTL);   register_code (KC_LALT);   register_code (KC_DEL);
+  ql_tap_state.state = cur_dance(state);
+  switch(ql_tap_state.state) {
+    case TRIPLE_TAP:
+      register_code (KC_LCTL);   register_code (KC_LALT);   register_code (KC_DEL);
+    default:
+      tap_code(KC_ESC);
   }
 }
 
 void esc_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
-  if (state->count == 3) {
+  if (ql_tap_state.state == TRIPLE_TAP) {
     unregister_code (KC_LCTL); unregister_code (KC_LALT); unregister_code (KC_DEL);
   }
+  ql_tap_state.state = 0;
 }
 
 //test if shift + double tap will send shifted code
 qk_tap_dance_action_t tap_dance_actions[] = {
-  [TD_GRV]  = ACTION_TAP_DANCE_FN(grv_tap),
+  [TD_GRV]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, grv_tap_finish, grv_dance_reset),
   [TD_CTRL] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ctrl_dance_finish, ctrl_dance_reset),
   [TD_ALT]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, alt_dance_finish, alt_dance_reset),
   [TD_SLCK] = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS),
@@ -239,7 +268,7 @@ void encoder_update_user(uint8_t index, bool clockwise) {
   if (index == _ENCODER) {
     uint8_t mods = get_mods();
     clear_mods();
-    if (mods == MOD_BIT(KC_RSFT)) {
+    if (mods == MOD_BIT(KC_RCTL)) {
       if (clockwise) {
         tap_code(KC_RGHT);
       } else {
