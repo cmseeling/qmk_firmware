@@ -5,8 +5,8 @@ extern keymap_config_t keymap_config;
 #define _BASE 0
 #define _SYMBOL 1
 #define _NAVIGATION 2
-#define _ENCODER 3
-#define _RGB 4
+#define _ENCODERV 3
+#define _ENCODERM 4
 
 enum custom_keycodes {
   QWERTY = SAFE_RANGE,
@@ -18,7 +18,8 @@ enum {
   TD_CTRL,
   TD_ALT,
   TD_SLCK,
-  TD_ESC
+  TD_ESC,
+  TD_ENC
 };
 
 typedef struct {
@@ -32,7 +33,6 @@ enum {
   DOUBLE_TAP = 3,
   TRIPLE_TAP = 4,
   QUAD_TAP = 5,
-  LUCKY_SEVEN = 6,
   NO_TAP_STATE
 };
 
@@ -46,7 +46,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
       KC_LSFT,    KC_A,      KC_S,      KC_D,      KC_F,      KC_G,                                  KC_H,      KC_J,      KC_K,      KC_L,     KC_SCLN,  KC_QUOT,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-      KC_LGUI,    KC_Z,      KC_X,      KC_C,      KC_V,      KC_B,  TG(_ENCODER),     TD(TD_GRV),   KC_N,      KC_M,    KC_COMM,    KC_DOT,    KC_SLSH, TG(_SYMBOL),
+      KC_LGUI,    KC_Z,      KC_X,      KC_C,      KC_V,      KC_B,  TD(TD_ENC),       TD(TD_GRV),   KC_N,      KC_M,    KC_COMM,    KC_DOT,    KC_SLSH, TG(_SYMBOL),
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
                                           TD(TD_CTRL), KC_SPC,  TD(TD_ALT),                   KC_BSPC,   KC_ENT,   TD(TD_SLCK)
   //                                      \----------+----------+----------/                \----------+----------+----------/
@@ -56,9 +56,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
       KC_F1,     KC_F2,     KC_F3,     KC_F4,     KC_F5,     KC_F6,                                  KC_F7,     KC_F8,     KC_F9,    KC_F10,    KC_F11,    KC_F12,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               KC_EQL,    KC_AMPR,   KC_PIPE,   KC_EXLM,   _______,   _______,
+     _______,   _______,   _______,   _______,   _______,   _______,                                KC_EXLM,  KC_EQL,    KC_AMPR,   KC_PIPE,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               KC_SLSH,   KC_LBRC,   KC_RBRC,   KC_BSLS,   _______,   _______,
+     _______,   _______,   _______,   _______,   _______,   _______,                               KC_UNDS,   KC_SLSH,   KC_LBRC,   KC_RBRC,   KC_BSLS,   _______,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
      _______,   _______,   _______,   _______,   _______,   _______,   _______,         _______,   _______,   _______,   _______,   _______,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
@@ -80,7 +80,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //                                      \----------+----------+----------/                \----------+----------+----------/
   ),
 
-  [_ENCODER] = LAYOUT(
+  [_ENCODERV] = LAYOUT(
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
      _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
@@ -94,19 +94,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //                                      \----------+----------+----------/                \----------+----------+----------/
   ),
 
-  [_RGB] = LAYOUT(
+  [_ENCODERM] = LAYOUT(
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     RGB_TOG,   BL_STEP,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
+     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     RGB_MOD,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
+     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     RGB_HUI,   RGB_SAI,   RGB_VAI,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
+     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-     RGB_HUD,   RGB_SAD,   RGB_VAD,   _______,   _______,   _______,   _______,         _______,   _______,   _______,   _______,   _______,   _______,   _______,
+     _______,   _______,   _______,   _______,   _______,   _______,   _______,         _______,   _______,   _______,   _______,   _______,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
                                             _______,   _______,   _______,                    _______,   _______,   _______
   //                                      \----------+----------+----------/                \----------+----------+----------/
   ),
+};
+
+void matrix_init_user(void) {
+  rgblight_setrgb(RGB_AZURE);
 };
 
 //Determine the current tap dance state
@@ -123,8 +127,6 @@ int cur_dance (qk_tap_dance_state_t *state) {
     return TRIPLE_TAP;
   } else if (state->count == 4) {
     return QUAD_TAP;
-  } else if (state->count == 7) {
-    return LUCKY_SEVEN;
   }
 
   return NO_TAP_STATE;
@@ -140,14 +142,7 @@ void grv_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
   ql_tap_state.state = cur_dance(state);
   switch(ql_tap_state.state) {
     case SINGLE_TAP:
-      if (layer_state_is(_RGB)) {
-        layer_off(_RGB);
-      } else {
-        tap_code(KC_GRV);
-      }
-      break;
-    case SINGLE_HOLD:
-      register_code(KC_RCTL);
+      tap_code(KC_GRV);
       break;
     case DOUBLE_TAP:
       if (layer_state_is(_NAVIGATION)) {
@@ -166,13 +161,12 @@ void grv_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
       if (layer_state_is(_NAVIGATION))
           layer_off(_NAVIGATION);
 
-      if (layer_state_is(_ENCODER))
-          layer_off(_ENCODER);
+      if (layer_state_is(_ENCODERV))
+          layer_off(_ENCODERV);
 
-      break;
-    case LUCKY_SEVEN:
-      //Activate RGB layer
-      layer_on(_RGB);
+      if (layer_state_is(_ENCODERM))
+          layer_off(_ENCODERM);
+
       break;
   }
 }
@@ -194,11 +188,6 @@ void ctrl_dance_finish (qk_tap_dance_state_t *state, void *user_data) {
       register_code(KC_LCTRL);
       break;
     case DOUBLE_TAP:
-      register_code(KC_LSFT);
-      tap_code(KC_LBRC);
-      unregister_code(KC_LSFT);
-      break;
-    case TRIPLE_TAP:
       tap_code(KC_LBRC);
       break;
   }
@@ -221,11 +210,6 @@ void alt_dance_finish (qk_tap_dance_state_t *state, void *user_data) {
       register_code(KC_LALT);
       break;
     case DOUBLE_TAP:
-      register_code(KC_LSFT);
-      tap_code(KC_RBRC);
-      unregister_code(KC_LSFT);
-      break;
-    case TRIPLE_TAP:
       tap_code(KC_RBRC);
       break;
   }
@@ -255,38 +239,65 @@ void esc_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
   ql_tap_state.state = 0;
 }
 
-//test if shift + double tap will send shifted code
+void enc_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
+  ql_tap_state.state = cur_dance(state);
+  switch(ql_tap_state.state) {
+    case SINGLE_TAP:
+      if (layer_state_is(_ENCODERV)) {
+        //if already set, then switch it off
+        layer_off(_ENCODERV);
+      } else {
+        //if not already set, then switch the layer on
+        layer_on(_ENCODERV);
+      }
+      break;
+    case DOUBLE_TAP:
+      if (layer_state_is(_ENCODERM)) {
+        //if already set, then switch it off
+        layer_off(_ENCODERM);
+      } else {
+        //if not already set, then switch the layer on
+        layer_on(_ENCODERM);
+      }
+      break;
+  }
+}
+
+// void enc_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
+//   if(ql_tap_state.state == SINGLE_HOLD) {
+//     unregister_code (KC_RCTL);
+//   }
+//   ql_tap_state.state = 0;
+// }
+
 qk_tap_dance_action_t tap_dance_actions[] = {
   [TD_GRV]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, grv_tap_finish, grv_dance_reset),
   [TD_CTRL] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ctrl_dance_finish, ctrl_dance_reset),
   [TD_ALT]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, alt_dance_finish, alt_dance_reset),
   [TD_SLCK] = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS),
   [TD_ESC]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, esc_tap, esc_dance_reset),
+  [TD_ENC]  = ACTION_TAP_DANCE_FN(enc_tap_finish),
 };
 
 void encoder_update_user(uint8_t index, bool clockwise) {
-  if (index == _ENCODER) {
-    uint8_t mods = get_mods();
-    clear_mods();
-    if (mods == MOD_BIT(KC_RCTL)) {
-      if (clockwise) {
-        tap_code(KC_RGHT);
-      } else {
-        tap_code(KC_LEFT);
-      }
-    } else {
-      if (clockwise) {
-        tap_code(KC_DOWN);
-      } else {
-        tap_code(KC_UP);
-      }
-    }
-    set_mods(mods);
-  } else {
+  if (index == _ENCODERM) {
     if (clockwise) {
       tap_code(KC_WH_D);
     } else {
       tap_code(KC_WH_U);
+    }
+  }
+  if (index == _ENCODERV) {
+    if (clockwise) {
+    tap_code(KC_DOWN);
+    } else {
+    tap_code(KC_UP);
+    }
+  } else {
+    if (clockwise) {
+    tap_code(KC_LEFT);
+    } else {
+    tap_code(KC_RGHT);
     }
   }
 }
