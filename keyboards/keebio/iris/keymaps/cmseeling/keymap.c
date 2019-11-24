@@ -58,9 +58,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
      _______,   _______,   _______,   _______,   _______,   _______,                               KC_UNDS,   KC_SLSH,   KC_LBRC,   KC_RBRC,   KC_BSLS,   _______,
   //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                                KC_EXLM,  KC_EQL,    KC_AMPR,   KC_PIPE,   _______,   _______,
+     RGB_HUI,   RGB_SAI,   RGB_VAI,   _______,   _______,   _______,                                KC_EXLM,  KC_EQL,    KC_AMPR,   KC_PIPE,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,   _______,         _______,   KC_PLUS,   KC_MINS,   _______,   _______,   _______,   _______,
+     RGB_HUD,   RGB_SAD,   RGB_VAD,   _______,   _______,   _______,   _______,         _______,   KC_PLUS,   KC_MINS,   _______,   _______,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
                                             _______,   _______,   _______,                    _______,   _______,   _______
   //                                      \----------+----------+----------/                \----------+----------+----------/
@@ -109,8 +109,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 };
 
-void matrix_init_user(void) {
-  rgblight_setrgb(RGB_AZURE);
+// Initialize rgblight
+void keyboard_post_init_user(void) {
+	rgblight_enable_noeeprom();
+	rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
+	layer_state_set_user(layer_state);
+};
+
+// Turn on RGB underglow according to active layer
+uint32_t layer_state_set_user(uint32_t state) {
+	switch (biton32(state)) {
+		case _NAVIGATION: rgblight_sethsv_noeeprom(213, 255, 255); break;
+		case _SYMBOL: rgblight_sethsv_noeeprom(132, 102, 255); break;
+		default: rgblight_sethsv_noeeprom(170, 255, 255); break;
+	}
+	return state;
 };
 
 //Determine the current tap dance state
