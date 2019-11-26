@@ -5,22 +5,11 @@ extern keymap_config_t keymap_config;
 #define _BASE 0
 #define _SYMBOL 1
 #define _NAVIGATION 2
-#define _ENCODERV 3
-#define _ENCODERM 4
 
-enum custom_keycodes {
-  QWERTY = SAFE_RANGE,
-  SYMBOL
-};
-
-enum {
-  TD_GRV = 0,
-  TD_CTRL,
-  TD_ALT,
-  TD_SLCK,
-  TD_ESC,
-  TD_ENC
-};
+typedef struct {
+  bool isModeVertical;
+  bool isModeMouse;
+} enc_state;
 
 typedef struct {
   bool is_press_action;
@@ -34,6 +23,20 @@ enum {
   TRIPLE_TAP = 4,
   QUAD_TAP = 5,
   NO_TAP_STATE
+};
+
+enum custom_keycodes {
+  QWERTY = SAFE_RANGE,
+  SYMBOL
+};
+
+enum {
+  TD_GRV = 0,
+  TD_CTRL,
+  TD_ALT,
+  TD_SLCK,
+  TD_ESC,
+  TD_ENC
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -75,34 +78,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      _______,   KC_LEFT,   KC_DOWN,   KC_RGHT,   KC_PGDN,   KC_END,                                _______,     KC_1,      KC_2,      KC_3,    KC_PLUS,   _______,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
      _______,   _______,   _______,   _______,   _______,   _______,   _______,         _______,   _______,     KC_0,     KC_DOT,   _______,   KC_MINS,   _______,
-  //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-                                            _______,   _______,   _______,                    _______,   _______,   _______
-  //                                      \----------+----------+----------/                \----------+----------+----------/
-  ),
-
-  [_ENCODERV] = LAYOUT(
-  //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,   _______,         _______,   _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-                                            _______,   _______,   _______,                    _______,   _______,   _______
-  //                                      \----------+----------+----------/                \----------+----------+----------/
-  ),
-
-  [_ENCODERM] = LAYOUT(
-  //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+                            ----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,                               _______,   _______,   _______,   _______,   _______,   _______,
-  //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
-     _______,   _______,   _______,   _______,   _______,   _______,   _______,         _______,   _______,   _______,   _______,   _______,   _______,   _______,
   //----------+----------+----------+----------+----------+----------+----------+      ----------+----------+----------+----------+----------+----------+----------+
                                             _______,   _______,   _______,                    _______,   _______,   _______
   //                                      \----------+----------+----------/                \----------+----------+----------/
@@ -173,12 +148,6 @@ void grv_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
 
       if (layer_state_is(_NAVIGATION))
           layer_off(_NAVIGATION);
-
-      if (layer_state_is(_ENCODERV))
-          layer_off(_ENCODERV);
-
-      if (layer_state_is(_ENCODERM))
-          layer_off(_ENCODERM);
 
       break;
   }
@@ -252,36 +221,26 @@ void esc_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
   ql_tap_state.state = 0;
 }
 
+static enc_state encoder_state = {
+  .isModeVertical = false,
+  .isModeMouse = false
+};
+
 void enc_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
   ql_tap_state.state = cur_dance(state);
   switch(ql_tap_state.state) {
     case SINGLE_TAP:
-      if (layer_state_is(_ENCODERV)) {
-        //if already set, then switch it off
-        layer_off(_ENCODERV);
+      if (encoder_state.isModeMouse) {
+        encoder_state.isModeMouse = false;
       } else {
-        //if not already set, then switch the layer on
-        layer_on(_ENCODERV);
+        encoder_state.isModeVertical = !encoder_state.isModeVertical;
       }
       break;
     case DOUBLE_TAP:
-      if (layer_state_is(_ENCODERM)) {
-        //if already set, then switch it off
-        layer_off(_ENCODERM);
-      } else {
-        //if not already set, then switch the layer on
-        layer_on(_ENCODERM);
-      }
+      encoder_state.isModeMouse = !encoder_state.isModeMouse;
       break;
   }
 }
-
-// void enc_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
-//   if(ql_tap_state.state == SINGLE_HOLD) {
-//     unregister_code (KC_RCTL);
-//   }
-//   ql_tap_state.state = 0;
-// }
 
 qk_tap_dance_action_t tap_dance_actions[] = {
   [TD_GRV]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, grv_tap_finish, grv_dance_reset),
@@ -293,13 +252,13 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 };
 
 void encoder_update_user(uint8_t index, bool clockwise) {
-  if (IS_LAYER_ON(_ENCODERM)) {
+  if (encoder_state.isModeMouse) {
     if (clockwise) {
       tap_code(KC_WH_D);
     } else {
       tap_code(KC_WH_U);
     }
-  } else if (IS_LAYER_ON(_ENCODERV)) {
+  } else if (encoder_state.isModeVertical) {
     if (clockwise) {
       tap_code(KC_UP);
     } else {
