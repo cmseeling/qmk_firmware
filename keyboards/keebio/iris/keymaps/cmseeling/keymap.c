@@ -25,11 +25,6 @@ enum {
   NO_TAP_STATE
 };
 
-enum custom_keycodes {
-  QWERTY = SAFE_RANGE,
-  SYMBOL
-};
-
 enum {
   TD_GRV = 0,
   TD_CTRL,
@@ -94,9 +89,9 @@ void keyboard_post_init_user(void) {
 // Turn on RGB underglow according to active layer
 uint32_t layer_state_set_user(uint32_t state) {
 	switch (biton32(state)) {
-		case _NAVIGATION: rgblight_sethsv_noeeprom(213, 255, 255); break;
-		case _SYMBOL: rgblight_sethsv_noeeprom(132, 102, 255); break;
-		default: rgblight_sethsv_noeeprom(170, 255, 255); break;
+		case _NAVIGATION: rgblight_sethsv_noeeprom(213, 255, 128); break;
+		case _SYMBOL: rgblight_sethsv_noeeprom(132, 102, 128); break;
+		default: rgblight_sethsv_noeeprom(170, 255, 128); break;
 	}
 	return state;
 };
@@ -143,12 +138,7 @@ void grv_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
       break;
     case QUAD_TAP:
       //I've confused myself and need to reset the layers
-      if (layer_state_is(_SYMBOL))
-          layer_off(_SYMBOL);
-
-      if (layer_state_is(_NAVIGATION))
-          layer_off(_NAVIGATION);
-
+      layer_move(0);
       break;
   }
 }
@@ -239,6 +229,14 @@ void enc_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
     case DOUBLE_TAP:
       encoder_state.isModeMouse = !encoder_state.isModeMouse;
       break;
+  }
+
+  if (encoder_state.isModeMouse) {
+    rgblight_mode_noeeprom(RGBLIGHT_MODE_SNAKE);
+  } else if (encoder_state.isModeVertical) {
+    rgblight_mode_noeeprom(RGBLIGHT_MODE_BREATHING + 3);
+  }  else {
+    rgblight_mode_noeeprom(RGBLIGHT_MODE_STATIC_LIGHT);
   }
 }
 
