@@ -143,12 +143,12 @@ void grv_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
   }
 }
 
-void grv_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
-  if(ql_tap_state.state == SINGLE_HOLD) {
-    unregister_code (KC_RCTL);
-  }
-  ql_tap_state.state = 0;
-}
+// void grv_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
+//   if(ql_tap_state.state == SINGLE_HOLD) {
+//     unregister_code (KC_RCTL);
+//   }
+//   ql_tap_state.state = 0;
+// }
 
 void ctrl_dance_finish (qk_tap_dance_state_t *state, void *user_data) {
   ql_tap_state.state = cur_dance(state);
@@ -219,6 +219,9 @@ static enc_state encoder_state = {
 void enc_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
   ql_tap_state.state = cur_dance(state);
   switch(ql_tap_state.state) {
+    case SINGLE_HOLD:
+      layer_on(_SYMBOL);
+      break;
     case SINGLE_TAP:
       if (encoder_state.isModeMouse) {
         encoder_state.isModeMouse = false;
@@ -240,13 +243,20 @@ void enc_tap_finish (qk_tap_dance_state_t *state, void *user_data) {
   }
 }
 
+void enc_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
+  if(ql_tap_state.state == SINGLE_HOLD) {
+    layer_off(_SYMBOL);
+  }
+  ql_tap_state.state = 0;
+}
+
 qk_tap_dance_action_t tap_dance_actions[] = {
-  [TD_GRV]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, grv_tap_finish, grv_dance_reset),
+  [TD_GRV]  = ACTION_TAP_DANCE_FN(grv_tap_finish),
   [TD_CTRL] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ctrl_dance_finish, ctrl_dance_reset),
   [TD_ALT]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, alt_dance_finish, alt_dance_reset),
   [TD_SLCK] = ACTION_TAP_DANCE_DOUBLE(KC_RSFT, KC_CAPS),
   [TD_ESC]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, esc_tap, esc_dance_reset),
-  [TD_ENC]  = ACTION_TAP_DANCE_FN(enc_tap_finish),
+  [TD_ENC]  = ACTION_TAP_DANCE_FN_ADVANCED(NULL, enc_tap_finish, enc_dance_reset),
 };
 
 void encoder_update_user(uint8_t index, bool clockwise) {
