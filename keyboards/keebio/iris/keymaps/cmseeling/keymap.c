@@ -253,15 +253,11 @@ void enc_dance_reset (qk_tap_dance_state_t *state, void *user_data) {
 }
 
 void home_select_finish (qk_tap_dance_state_t *state, void *user_data) {
-    register_code(KC_LSFT);
-    tap_code(KC_HOME);
-    unregister_code (KC_LSFT);
+  tap_code16(LSFT(KC_HOME));
 }
 
 void end_select_finish (qk_tap_dance_state_t *state, void *user_data) {
-    register_code(KC_LSFT);
-    tap_code(KC_END);
-    unregister_code (KC_LSFT);
+  tap_code16(LSFT(KC_END));
 }
 
 qk_tap_dance_action_t tap_dance_actions[] = {
