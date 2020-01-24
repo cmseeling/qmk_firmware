@@ -81,6 +81,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 };
 
+void matrix_init_user(void) {
+    wait_ms(50);
+}
+
 // Initialize rgblight
 void keyboard_post_init_user(void) {
 	rgblight_enable_noeeprom();
@@ -274,9 +278,9 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 void encoder_update_user(uint8_t index, bool clockwise) {
   if (encoder_state.isModeMouse) {
     if (clockwise) {
-      tap_code(KC_WH_D);
-    } else {
       tap_code(KC_WH_U);
+    } else {
+      tap_code(KC_WH_D);
     }
   } else if (encoder_state.isModeVertical) {
     if (clockwise) {
