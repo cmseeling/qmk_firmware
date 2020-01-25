@@ -274,9 +274,9 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 void encoder_update_user(uint8_t index, bool clockwise) {
   if (encoder_state.isModeMouse) {
     if (clockwise) {
-      tap_code(KC_WH_D);
-    } else {
       tap_code(KC_WH_U);
+    } else {
+      tap_code(KC_WH_D);
     }
   } else if (encoder_state.isModeVertical) {
     if (clockwise) {
