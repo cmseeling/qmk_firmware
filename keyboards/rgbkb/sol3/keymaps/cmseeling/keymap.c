@@ -30,8 +30,6 @@
 
 enum sol_layers {
     _QWERTY,
-    _COLEMAK,
-    _GAME,
     _FN,
     _ADJUST
 };
@@ -45,77 +43,101 @@ enum sol_keycodes {
     RGB_RST
 };
 
+typedef enum {
+    TD_NONE,
+    TD_UNKNOWN,
+    TD_SINGLE_TAP,
+    TD_SINGLE_HOLD,
+    TD_DOUBLE_TAP
+} td_state_t;
+
+typedef struct {
+    bool is_press_action;
+    td_state_t state;
+} td_tap_t;
+
+// Tap Dance Enums
+enum {
+    TD_ALT,
+    TD_CAPS,
+    TD_HOME,
+    TD_LAYR,
+};
+
+// Function associated with all tap dances
+td_state_t cur_dance(tap_dance_state_t *state);
+
+// Functions associated with individual tap dances
+void td_alt_finished(tap_dance_state_t *state, void *user_data);
+void td_alt_reset(tap_dance_state_t *state, void *user_data);
+void td_layr_finished(tap_dance_state_t *state, void *user_data);
+
 #define FN       MO(_FN)
 #define ADJUST   MO(_ADJUST)
-#define COLEMAK  DF(_COLEMAK)
-#define GAME     DF(_GAME)
 #define QWERTY   DF(_QWERTY)
-#define FN_CAPS  LT(_FN, KC_CAPS)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-    // [_QWERTY] = LAYOUT(
-    //     KC_ESC,      KC_1,    KC_2,       KC_3,    KC_4,    KC_5,    KC_F1,                      KC_EQL,      KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_DEL,
-    //     KC_TAB,      KC_Q,    KC_W,       KC_E,    KC_R,    KC_T,    KC_F5,                      KC_MINS,     KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSLS,
-    //     TD(TD_SHFT), KC_A,    KC_S,       KC_D,    KC_F,    KC_G,    KC_F6,                      KC_MINS,     KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-    //     KC_LSFT,     KC_Z,    KC_X,       KC_C,    KC_V,    KC_B,    KC_F12,                     KC_EQL,      KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSHIFT,
-    //     KC_LCTL,     KC_LGUI, TD(TD_ALT), KC_LBRC, KC_RBRC, KC_SPC,  KC_END, KC_HOME,   KC_BSPC, KC_GRAVE,    KC_ENT,  KC_LEFT, KC_UP,   KC_DOWN, KC_RGHT, TD(TD_LAYR),
-
-    //     KC_VOLD, KC_VOLU, KC_VOLD, KC_VOLU, KC_VOLD, KC_VOLU,                                     KC_VOLD, KC_VOLU, KC_VOLD, KC_VOLU, KC_VOLD, KC_VOLU,
-    //     KC_DOWN, KC_UP,   KC_RGHT, KC_HOME, KC_LEFT,                                                       KC_VOLD, KC_VOLU, KC_MNXT, KC_MPLY, KC_MPRV
-    // ),
-
     [_QWERTY] = LAYOUT(
-        KC_ESC,         KC_1,    KC_2,       KC_3,    KC_4,    KC_5,    KC_F1,                      KC_EQL,   KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_DEL,
-        KC_TAB,         KC_Q,    KC_W,       KC_E,    KC_R,    KC_T,    KC_F5,                      KC_MINS,  KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSLS,
-        KC_CAPS,        KC_A,    KC_S,       KC_D,    KC_F,    KC_G,    KC_F6,                      KC_MINS,  KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-        KC_LSFT,        KC_Z,    KC_X,       KC_C,    KC_V,    KC_B,    KC_F12,                     KC_EQL,   KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
-        KC_LCTL,        KC_LGUI, KC_LALT,    KC_LBRC, KC_RBRC, KC_SPC,  KC_END, KC_HOME,   KC_BSPC, KC_GRAVE, KC_ENT,  KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_RCTL,
+        KC_ESC,      KC_1,    KC_2,       KC_3,    KC_4,    KC_5,    KC_F1,                        KC_EQL,   KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_DEL,
+        KC_TAB,      KC_Q,    KC_W,       KC_E,    KC_R,    KC_T,    KC_F5,                        KC_MINS,  KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSLS,
+        TD(TD_CAPS), KC_A,    KC_S,       KC_D,    KC_F,    KC_G,    KC_F6,                        KC_MINS,  KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+        KC_LSFT,     KC_Z,    KC_X,       KC_C,    KC_V,    KC_B,    KC_F12,                       KC_EQL,   KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
+        KC_LCTL,     KC_LGUI, TD(TD_ALT), KC_LBRC, KC_RBRC, KC_SPC,  KC_END, TD(TD_HOME), KC_BSPC, KC_GRAVE, KC_ENT,  KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, TD(TD_LAYR),
 
         KC_VOLD, KC_VOLU, KC_MNXT, KC_MPLY, KC_MPRV,                                                       KC_VOLD, KC_VOLU, KC_MNXT, KC_MPLY, KC_MPRV
     ),
 
-    [_COLEMAK] = LAYOUT(
-        _______, _______, _______, _______, _______, _______, _______,                   _______, _______, _______, _______, _______, _______, _______,
-        _______, KC_Q,    KC_W,    KC_F,    KC_P,    KC_G,    _______,                   _______, KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, _______,
-        _______, KC_A,    KC_R,    KC_S,    KC_T,    KC_D,    _______,                   _______, KC_H,    KC_N,    KC_E,    KC_I,    KC_O,    _______,
-        _______, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    _______,                   _______, KC_K,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-
-        _______, _______, _______, _______, _______,                                                       _______, _______, _______, _______, _______
-    ),
-
-    [_GAME] = LAYOUT(
-        _______, _______, _______, _______, _______, _______, KC_F1,                     KC_F5,   _______, _______, _______, _______, _______, _______,
-        _______, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_F2,                     KC_F6,   KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    _______,
-        _______, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_F3,                     KC_F7,   KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, _______,
-        _______, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_F4,                     KC_F8,   KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, _______,
-        _______, KC_NO,   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-
-        _______, _______, _______, _______, _______,                                                       _______, _______, _______, _______, _______
-    ),
-
     [_FN] = LAYOUT(
         _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F11,                    KC_F12,  KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______,
-        _______, KC_HOME, KC_UP,   KC_END,  _______, _______, _______,                   _______, _______, KC_HOME, KC_UP,   KC_END,  KC_PSCR, KC_PGUP,
-        _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______, _______,                   _______, _______, KC_LEFT, KC_DOWN, KC_RGHT, KC_INS,  KC_PGDN,
-        _______, AU_TOGG, MU_TOGG, MU_NEXT, _______, _______, _______,                   _______, _______, _______, _______, _______, _______, _______,
-        _______, CK_TOGG,   CK_UP, CK_DOWN, _______, _______, _______, _______, _______, _______, _______, KC_MPLY, KC_MNXT, KC_MUTE, KC_VOLD, KC_VOLU,
+        _______, _______, KC_UP,   _______, KC_PGUP, _______, _______,                   _______, _______, _______, _______, _______, _______, _______,
+        _______, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, _______,                   _______, _______, _______, _______, _______, _______, _______,
+        _______, KC_HOME, _______, KC_END,  _______, _______, _______,                   _______, _______, _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_PSCR, _______, _______, _______, _______, _______, _______,
 
         _______, _______, _______, _______, _______,                                                       _______, _______, _______, _______, _______
     ),
 
     [_ADJUST] = LAYOUT(
         _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F11,                    KC_F12,  KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  _______,
-        _______, RM_SATD, RM_VALU, RM_SATU, QK_BOOT, _______, _______,                   _______, _______, KC_P7,   KC_P8,   KC_P9,   _______, _______,
-        _______, RM_HUED, RM_VALD, RM_HUEU, RGB_RST, _______, DM_REC1,                   _______, _______, KC_P4,   KC_P5,   KC_P6,   _______, _______,
-        _______, RM_SPDD, _______, RM_SPDU, _______, _______, DM_RSTP,                   _______, _______, KC_P1,   KC_P2,   KC_P3,   _______, GAME,
-        _______, RM_PREV, RM_TOGG, RM_NEXT, _______, _______, _______, _______, _______, _______, _______, KC_P0,   KC_PDOT, KC_NUM,  QWERTY,  COLEMAK,
+        _______, RM_SATD, RM_VALU, RM_SATU, QK_BOOT, _______, _______,                   _______, _______, _______, _______, _______, _______, _______,
+        _______, RM_HUED, RM_VALD, RM_HUEU, RGB_RST, _______, DM_REC1,                   _______, _______, _______, _______, _______, _______, _______,
+        _______, RM_SPDD, _______, RM_SPDU, _______, _______, DM_RSTP,                   _______, _______, _______, _______, _______, _______, _______,
+        _______, RM_PREV, RM_TOGG, RM_NEXT, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
 
         _______, _______, _______, _______, _______,                                                       _______, _______, _______, _______, _______
     ),
 
 };
+
+// bool rgb_matrix_indicators_kb(void) {
+//     if (!rgb_matrix_indicators_user()) {
+//         return false;
+//     }
+//     switch (layer_state) {
+//         case _FN:
+//             rgb_matrix_set_color_all(RGB_GREEN);
+//             break;
+//         case _ADJUST:
+//             rgb_matrix_set_color_all(RGB_PURPLE);
+//             break;
+//         default:
+//             rgb_matrix_set_color_all(RGB_BLUE);
+//             break;
+//     }
+//     return true;
+// }
+
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    if (layer_state_is(_FN)) {
+        rgb_matrix_set_color_all(RGB_GREEN);
+    } else if (layer_state_is(_ADJUST)) {
+        rgb_matrix_set_color_all(RGB_PURPLE);
+    } else {
+        rgb_matrix_set_color_all(RGB_BLUE);
+    }
+    return false;
+}
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode)
@@ -150,18 +172,83 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
+td_state_t cur_dance(tap_dance_state_t *state) {
+    if (state->count == 1) {
+        if (!state->pressed) return TD_SINGLE_TAP;
+        else return TD_SINGLE_HOLD;
+    } else if (state->count == 2) return TD_DOUBLE_TAP;
+    else return TD_UNKNOWN;
+}
+
+static td_tap_t ql_tap_state = {
+    .is_press_action = true,
+    .state = TD_NONE
+};
+
+void td_alt_finished(tap_dance_state_t *state, void *user_data) {
+    ql_tap_state.state = cur_dance(state);
+    switch (ql_tap_state.state) {
+        case TD_SINGLE_TAP:
+            tap_code(KC_LALT);
+            break;
+        case TD_SINGLE_HOLD:
+            register_code16(KC_LALT);
+            break;
+        case TD_DOUBLE_TAP:
+            // Check to see if the layer is already set
+            if (layer_state_is(_FN)) {
+                // If already set, then switch it off
+                // rgb_matrix_set_color_all(RGB_BLUE);
+                layer_off(_FN);
+            } else {
+                // If not already set, then switch the layer on
+                // rgb_matrix_set_color_all(RGB_GREEN);
+                layer_on(_FN);
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+void td_alt_reset(tap_dance_state_t *state, void *user_data) {
+    unregister_code16(KC_LALT);
+}
+
+void td_layr_finished(tap_dance_state_t *state, void *user_data) {
+    ql_tap_state.state = cur_dance(state);
+    switch (ql_tap_state.state) {
+        case TD_SINGLE_HOLD:
+        case TD_SINGLE_TAP:
+            // rgblight_sethsv_noeeprom(160, 255, 255);
+            // rgb_matrix_set_color_all(RGB_BLUE);
+            layer_move(0);
+            break;
+        case TD_DOUBLE_TAP:
+            if (!layer_state_is(_ADJUST)) {
+                // rgblight_sethsv_noeeprom(0, 255, 255);
+                // rgb_matrix_set_color_all(RGB_PURPLE);
+                layer_on(_ADJUST);
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+tap_dance_action_t tap_dance_actions[] = {
+    [TD_ALT] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, td_alt_finished, td_alt_reset),
+    [TD_HOME] = ACTION_TAP_DANCE_DOUBLE(KC_HOME, KC_ESC),
+    [TD_CAPS] = ACTION_TAP_DANCE_DOUBLE(KC_LSFT, KC_CAPS),
+    [TD_LAYR] = ACTION_TAP_DANCE_FN(td_layr_finished),
+};
+
 void render_layer_status(void) {
     // Host Keyboard Layer Status
     oled_write_P(PSTR("Layer"), false);
     switch (get_highest_layer(layer_state)) {
         case _QWERTY:
             oled_write_ln_P(PSTR("QWRTY"), false);
-            break;
-        case _COLEMAK:
-            oled_write_ln_P(PSTR("Colemk"), false);
-            break;
-        case _GAME:
-            oled_write_ln_P(PSTR("Game  "), false);
             break;
         case _FN:
             oled_write_ln_P(PSTR("FN   "), false);
@@ -174,11 +261,49 @@ void render_layer_status(void) {
     }
 }
 
-#ifdef ENCODER_MAP_ENABLE
-const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
-    [0]       = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU),
-                  ENCODER_CCW_CW(KC_PGUP, KC_PGDN), ENCODER_CCW_CW(KC_PGUP, KC_PGDN), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
-    [1 ... 4] = { ENCODER_CCW_CW(_______, _______), ENCODER_CCW_CW(_______, _______), ENCODER_CCW_CW(_______, _______),
-                  ENCODER_CCW_CW(_______, _______), ENCODER_CCW_CW(_______, _______), ENCODER_CCW_CW(_______, _______) }
-};
-#endif
+static void render_cat(void) {
+    static const char PROGMEM sleepy_cat[] = {
+        // 'sleepy_cat', 32x32px
+        0x00, 0x00, 0x00, 0x04, 0x84, 0x54, 0x24, 0x54, 0x0c, 0x04, 0x00, 0x00, 0x80, 0x80, 0x80, 0x80, 
+        0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+        0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x80, 0x44, 0x24, 0xc6, 0x85, 
+        0x84, 0x80, 0xe0, 0x20, 0x10, 0x08, 0xf0, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+        0x00, 0x00, 0x00, 0xe0, 0x10, 0x0c, 0x02, 0x02, 0x01, 0x7d, 0x83, 0x00, 0x80, 0x80, 0x80, 0x01, 
+        0x02, 0x03, 0x00, 0x00, 0x00, 0x80, 0x41, 0x02, 0xfd, 0x1e, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 
+        0x00, 0x00, 0x00, 0x07, 0x08, 0x10, 0x10, 0x10, 0x10, 0x10, 0x33, 0x24, 0x28, 0x28, 0x28, 0x29, 
+        0x29, 0x3a, 0x18, 0x1c, 0x39, 0x24, 0x24, 0x3a, 0x2d, 0x26, 0x31, 0x1f, 0x00, 0x00, 0x00, 0x00
+    };
+    oled_write_raw_P(sleepy_cat, sizeof(sleepy_cat));
+}
+
+void render_lock_status(void)
+{
+    led_t led_state = host_keyboard_led_state();
+    oled_write_ln_P(  led_state.caps_lock ? PSTR("Caps ") : PSTR("     "), false);
+    oled_write_ln_P(   led_state.num_lock ? PSTR("Nmlck") : PSTR("     "), false);
+    oled_write_ln_P(led_state.scroll_lock ? PSTR("Scrol") : PSTR("     "), false);
+}
+
+bool oled_task_user(void) {
+    oled_clear();
+    render_icon();
+    oled_write_ln_P(PSTR("     "), false);
+    switch (get_highest_layer(layer_state)) {
+        case _QWERTY:
+            // oled_write_ln_P(PSTR("Qwrty"), false);
+            // render_lock_status();
+            oled_write_ln_P(PSTR("     "), false);
+            render_cat();
+            break;
+        case _FN:
+            // oled_write_ln_P(PSTR("FNKEY"), false);
+            // render_lock_status();
+            oled_write_ln_P(PSTR("     "), false);
+            render_cat();
+            break;
+        case _ADJUST:
+            render_rgb_menu();
+            break;
+    }
+    return false;
+}
