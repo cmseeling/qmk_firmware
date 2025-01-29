@@ -138,13 +138,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    hsv_t hsv = {0, 255, 170};
+
     if (layer_state_is(_FN)) {
-        rgb_matrix_set_color_all(RGB_GREEN);
+        // rgb_matrix_set_color_all(RGB_GREEN);
+        hsv = (hsv_t){85, 255, 120};
     } else if (layer_state_is(_ADJUST)) {
-        rgb_matrix_set_color_all(RGB_PURPLE);
+        // rgb_matrix_set_color_all(RGB_PURPLE);
+        hsv = (hsv_t){191, 255, 170};
     } else {
-        rgb_matrix_set_color_all(RGB_BLUE);
+        // rgb_matrix_set_color_all(RGB_BLUE);
+        hsv = (hsv_t){170, 255, 170};
     }
+
+    rgb_t rgb = hsv_to_rgb(hsv);
+    rgb_matrix_set_color_all(rgb.r, rgb.g, rgb.b);
     return false;
 }
 
